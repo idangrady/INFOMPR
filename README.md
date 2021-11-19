@@ -1,5 +1,5 @@
 # INFOMPR
- Pattern recognition course Utrecht University
+ Pattern Recognition Course Utrecht University
 
 # folders 
 
