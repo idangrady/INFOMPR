@@ -1,8 +1,8 @@
 # INFOMPR
- Pattern recognition coiurse Utrecht University
+ Pattern recognition course Utrecht University
 
 # folders 
--
+
 # Participants
 
 # Course Website
