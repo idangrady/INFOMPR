@@ -8,7 +8,6 @@
 Temelko,Angel
 Stekelenburg,Quinten,
 Grady, Idan
-
 ## Group Assignment
 Stekelenburg Quinten,
 Fehrentz Max
