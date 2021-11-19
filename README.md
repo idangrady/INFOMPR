@@ -5,17 +5,17 @@
 
 # Participants
 ## Practical Assignment:
-Temelko, A. ,Angel
-Stekelenburg, Q. ,Quinten,
+Temelko,Angel
+Stekelenburg,Quinten,
 Grady, Idan
 
 ## Group Assignment
-Stekelenburg, Q. ,Quinten,
-Fehrentz, M. ,Max
-Shi, Y. ,Yue
-Konstantinou, M. ,Michael
-Constantinou, A. ,Alexandros
-Grady, Idan
+Stekelenburg Quinten,
+Fehrentz Max
+Shi Yue
+Konstantinou Michael
+Constantinou Alexandros
+Grady Idan
 
 # Course Website
 https://www.cs.uu.nl/docs/vakken/mpr/
