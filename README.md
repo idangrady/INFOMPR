@@ -10,10 +10,10 @@ Stekelenburg,Quinten,
 Grady, Idan
 ## Group Assignment
 Stekelenburg Quinten,
-Fehrentz Max
-Shi Yue
-Konstantinou Michael
-Constantinou Alexandros
+Fehrentz Max,
+Shi Yue,
+Konstantinou Michael,
+Constantinou Alexandros,
 Grady Idan
 
 # Course Website
