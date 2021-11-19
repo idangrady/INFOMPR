@@ -1,9 +1,6 @@
-# INFOMPR
- Pattern recognition coiurse Utrecht University
-
 # folders 
--
+
 # Participants
 
-# Course Website
-https://www.cs.uu.nl/docs/vakken/mpr/
+# Practical Assignment Instructions
+https://www.cs.uu.nl/docs/vakken/mpr/computer-labPython.php
