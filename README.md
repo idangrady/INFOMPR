@@ -5,15 +5,15 @@
 
 # Participants
 ## Practical Assignment:
-Temelko,Angel
+Temelko Angel,
 Stekelenburg,Quinten,
-Grady, Idan
+Grady Idan
 ## Group Assignment
 Stekelenburg Quinten,
-Fehrentz Max
-Shi Yue
-Konstantinou Michael
-Constantinou Alexandros
+Fehrentz Max,
+Shi Yue,
+Konstantinou Michael,
+Constantinou Alexandros,
 Grady Idan
 
 # Course Website
