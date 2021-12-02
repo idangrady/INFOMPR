@@ -58,45 +58,53 @@ digits = mnist_data[:, 1:] # ==> <class 'numpy.ndarray'>
 img_size = 28
 
 
-
 sum_intensity = np.sum(digits,axis= 0)
 most_frequqnt_pixel = np.argmax(sum_intensity)
 
-
-array_pixel_by_digit = np.loadtxt('Num_Pixel_By_Digit.csv')
-
-
-ys = []
-y = []
-x = list([np.arange(10)])
-
-fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(30,10), squeeze=False)
-
-for n , num_features in zip (range(3),np.arange(10,180,40)) :
-
-    for num in range(10):
-        inx_max = np.argmax(np.average(array_pixel_by_digit[num], axis = 0))
-        importance_pixel  = np.argsort(np.average(array_pixel_by_digit[num], axis = 0))[-num_features::]
-        y.append(importance_pixel)
-    
-    ys.append(y)
-    
-    
-    
+array_pixel_by_digit = [[0] for i in range(10)]
+num_occur = [[0] for i in range(10)]
 
 
-concat = np.expand_dims(ys[1][1], axis = 0)
-for i in range(1,10):
-    concat  = np.concatenate(   (concat, np.expand_dims(ys[1][i],axis = 0)) , axis =0)
-    
-x,X_test,y,Y_test = train_test_split(concat, np.arange(10), shuffle=6)
+sorted_by_digi = mnist_data[mnist_data[:, 0].argsort()]
+num_features =50
 
-    
-for k in [2,10]:
-    for model in [ LogisticRegression()]:
-        name, params = model_get_best_grid_params(model)
+most_im = [np.argsort(np.average(sorted_by_digi[sorted_by_digi[:,0]==idx], axis = 0))[-num_features::] for idx in range(10)]
+
+
+most_important_pixels = [sorted_by_digi[sorted_by_digi[:,0]== idx,:] for idx, col in enumerate(most_im)  ]
+
+
+concat =0
+check_not_in = []
+
+for idx, row in enumerate(most_im):
+    not_included = [x for x in range(1,784) if x not in list(row)]
+    check_not_in.append(not_included)
+    masked = most_important_pixels[idx]
+    sored = np.sort(row)
+        #masked[:,list(list_loc)]= np.array(np.max(masked)) #           np.ones(1)  #
+    print("masked_1")
+    print(masked)
+    masked[:,not_included]=np.zeros(1)
+    print(masked)
+    print("masked_2")
+    print(idx)
+    masked[:,0] = np.array(idx)
+
+    if isinstance(concat, np.ndarray):
+        concat = np.concatenate((concat,masked), axis = 0)
         
-        # (Accuracy, Precision, Recall, F-score)
-        tuned_params = GridSearchCV(model, params, cv=k, n_jobs=-1)
-        tuned_params.fit(x, y)
-        y_pred = tuned_params.predict(X_test)
+        print("concat")
+    else: 
+        concat = masked
+
+np.random.shuffle(concat)
+
+
+model= LogisticRegressionCV()
+model.fit(concat[:,1:],concat[:,0] )
+
+predict = model.predict(mnist_data[:5000, 1:])
+accuracy =(np.sum(predict ==mnist_data[:5000, 0]))/ 5000
+
+print(predict)
