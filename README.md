@@ -6,10 +6,10 @@
 # Participants
 ## Practical Assignment:
 Temelko Angel,
-Stekelenburg,Quinten,
+Fluiter Marc,
 Grady Idan
 ## Group Assignment
-Stekelenburg Quinten,
+Fluiter Marc,
 Fehrentz Max,
 Shi Yue,
 Konstantinou Michael,
