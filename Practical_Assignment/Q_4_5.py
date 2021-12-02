@@ -126,4 +126,12 @@ for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier(
 
 if save: 
     df.to_csv("Models.csv", index = False)
-    np.save('confusion_matrix.txt',confusion_matrix)
+    with open("Confusion_Matrixes.txt", 'w') as output:       
+        for mat in confusion_matrixes:
+            (name_mat , matrix_) = mat
+            output.write(str(name_mat) + '\n\n')
+            output.write(str(matrix_) + '\n\n')
+            
+            
+  
+    
