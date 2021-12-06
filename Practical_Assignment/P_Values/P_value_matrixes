@@ -1,0 +1,37 @@
+models: LogisticRegression , LogisticRegressionCV
+
+[[ 2687.   724.]
+ [  361. 29828.]]models: LogisticRegression , SVC
+
+[[ 1479.  1932.]
+ [  437. 29752.]]models: LogisticRegression , MLPClassifier
+
+[[ 1517.  1894.]
+ [  365. 29824.]]models: LogisticRegressionCV , LogisticRegression
+
+[[ 2687.   361.]
+ [  724. 29828.]]models: LogisticRegressionCV , SVC
+
+[[ 1472.  1576.]
+ [  444. 30108.]]models: LogisticRegressionCV , MLPClassifier
+
+[[ 1500.  1548.]
+ [  382. 30170.]]models: SVC , LogisticRegression
+
+[[ 1479.   437.]
+ [ 1932. 29752.]]models: SVC , LogisticRegressionCV
+
+[[ 1472.   444.]
+ [ 1576. 30108.]]models: SVC , MLPClassifier
+
+[[ 1214.   702.]
+ [  668. 31016.]]models: MLPClassifier , LogisticRegression
+
+[[ 1517.   365.]
+ [ 1894. 29824.]]models: MLPClassifier , LogisticRegressionCV
+
+[[ 1500.   382.]
+ [ 1548. 30170.]]models: MLPClassifier , SVC
+
+[[ 1214.   668.]
+ [  702. 31016.]]

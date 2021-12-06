@@ -15,14 +15,16 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support, mean_absolute_error
+from statsmodels.stats.contingency_tables import mcnemar
 
 
 def masked_non_zeros(data):
     masked =np.all(data ==0, axis= 0 )
+    amount_of_zeros = np.sum(masked)
     masked = np.where(masked==True,False, True)
     masked_digit = data[:, masked]
 
-    return masked_digit
+    return (amount_of_zeros, masked_digit)
 
 def model_get_best_grid_params(model):
     name_model =str(model)[:-2]
@@ -40,21 +42,23 @@ def model_get_best_grid_params(model):
 def ncnemars_test(y,model_1,model_2):
     
     output_matrix = np.zeros((2,2)) #creating the output matrix
-    
+    np.sum()
     #check when model are inacuurate and place it in the right loc in the matrix
-    output_matrix[1][0] = np.sum(np.where(((y+model_1 >1) | (y+model_1 == 0) ) & (y+model_2 ==1),1,0))  #model 1 TN or TP, modele 2 FN or FP
-    output_matrix[0][1] = np.sum(np.where(((y+model_2 >1) | (y+model_2 == 0) ) & (y+model_1 ==1),1,0))  #model 2 TN or TP, modele 1 FN or FP
+    output_matrix[1][0] = np.sum(np.where((y ==model_1 ) & (y!=model_2),1,0))  #model 1 TN or TP, modele 2 FN or FP
+    output_matrix[0][1] = np.sum(np.where(((y !=model_1) & (y==model_2) ),1,0))  #model 2 TN or TP, modele 1 FN or FP
     
     #check when model are are the same in both ==> their correct output and mistakes
-    output_matrix[0][0] = np.sum(np.where((y+model_2 ==1) & (y+model_1 ==1),1,0)) #both models incorrect (FN or FP)
-    output_matrix[1][1] =np.sum(np.where(y+ model_1+model_2>2 ,1,0))  + (np.sum(np.where(y+ model_1+model_2==0 ,1,0))) #both models correct (TP or TN)
+    output_matrix[0][0] = np.sum(np.where((y!= model_2 ) & (y!= model_1 ),1,0)) #both models incorrect (FN or FP)
+    output_matrix[1][1] =np.sum(np.where((y==model_1) & (y==model_2) ,1,0)) #both models correct (TP or TN)
+    
+    
     
     #check if we can divide
     if (output_matrix[1][0] - output_matrix[0][1] != 0):
         p_value = ((abs(output_matrix[1][0]) - (output_matrix[0][1]))-1)**2 / (output_matrix[1][0] + output_matrix[0][1])
     # if not
     else:
-        p_value  ="can not divided by 0"
+        p_value  ="can not divided by 0: The false positive and false negative are equal"
         
     return(output_matrix,p_value)
 
@@ -69,8 +73,9 @@ img_size = 28
 
 
 # Remove Features with only 0 values ==> Not a must since it will be taken care at a later stage as well
-non_zero_df = masked_non_zeros(digits)
+(amount_of_zeros, non_zero_df) = masked_non_zeros(digits)
 
+print(f" Amount of Zeros {amount_of_zeros} ; Non Zero Shapes: {non_zero_df.shape} ; Digit_Shpes {digits.shape}")
 #Standardize The data
 standardized_data= StandardScaler().fit_transform(non_zero_df)
 
@@ -91,7 +96,8 @@ df_2 = pd.DataFrame(data = None, columns=("name" , "accuracy_test", "accuracy tr
 X_train,X_test,y_train,Y_test = train_test_split(pca_data_19, labels,shuffle= 40, train_size=0.2)
 idx = 0
 
-save = True
+save = False
+predictions_list  = []
 
 print(Y_test.shape)
 for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier()]: #LogisticRegression(),
@@ -104,7 +110,8 @@ for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier(
         
     model.fit(X_train, y_train)
     predicted = model.predict(X_test)
-
+    
+    predictions_list.append((name, predicted))
     confusion_matrix = metrics.confusion_matrix(predicted, Y_test)
     confusion_matrixes.append(((name, confusion_matrix)))
     
@@ -122,6 +129,34 @@ for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier(
     
     idx +=1
     
+saved_p_val =True
+df_p = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
+df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
+output_matrixes_p_val = []
+
+tables = []
+for prediction_1 in predictions_list:
+    model_1, prediction_1 = prediction_1
+    for prediction_2 in predictions_list:
+        model_2, prediction_2 = prediction_2
+        if (model_1 ==model_2):
+            pass
+        else:
+            output_matrix, p_value= ncnemars_test(Y_test,prediction_1, prediction_2)
+            print(f"{model_1} {model_2} values: {mcnemar(output_matrix, exact = False)}")
+           # tables.append((model_1,model_2,table,p_val, static))
+
+            result_p_val = [model_1, model_2, p_value]
+            df_2P.loc[len(result_p_val)] = result_p_val
+            df_p = pd.concat([df_p, df_2P]).reset_index(drop = True)
+            output_matrixes_p_val.append((model_1,model_2, output_matrix))
+
+if saved_p_val:
+    df_p.to_csv("Pvalus_models_")
+    with open("P_value_matrixes",'w') as p_val_matrix:
+        for (model_1, model_2, output_mat) in output_matrixes_p_val:
+            p_val_matrix.write(f"models: {str(model_1)} , {str(model_2)}" + '\n\n')
+            p_val_matrix.write(str(output_mat))
     
 
 if save: 

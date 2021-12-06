@@ -16,6 +16,7 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 import csv
 from io import StringIO   # StringIO behaves like a file object
+import scipy.stats as stats
 
 
 
@@ -57,9 +58,17 @@ labels = mnist_data[:, 0] # ==> <class 'numpy.ndarray'> original R 1x784
 digits = mnist_data[:, 1:] # ==> <class 'numpy.ndarray'>
 img_size = 28
 
+not_zero = np.sum(np.where(digits != 0, 1, 0))
+np_zero = np.sum(np.where(digits == 0, 1, 0))
+
+tatio =  (np_zero /(not_zero + np_zero))
+
+
 
 sum_intensity = np.sum(digits,axis= 0)
 most_frequqnt_pixel = np.argmax(sum_intensity)
+
+
 
 array_pixel_by_digit = [[0] for i in range(10)]
 num_occur = [[0] for i in range(10)]
@@ -68,9 +77,19 @@ num_occur = [[0] for i in range(10)]
 sorted_by_digi = mnist_data[mnist_data[:, 0].argsort()]
 num_features =50
 
+How_Many_digits_For_class =[sorted_by_digi[sorted_by_digi[:,0] ==x].shape[0] for x in range(10)]
+
+std_diti = np.std(How_Many_digits_For_class)
+mean_diti = np.mean(How_Many_digits_For_class)
+variance = np.var(How_Many_digits_For_class)
+media  = np.median(How_Many_digits_For_class)
+
+g = sns.distplot(sorted(How_Many_digits_For_class)) #, kde = False
+#g.set_yticks(range(0,10,2))
+g.set_xlabel("Values")
+
+
 most_im = [np.argsort(np.average(sorted_by_digi[sorted_by_digi[:,0]==idx], axis = 0))[-num_features::] for idx in range(10)]
-
-
 most_important_pixels = [sorted_by_digi[sorted_by_digi[:,0]== idx,:] for idx, col in enumerate(most_im)  ]
 
 
