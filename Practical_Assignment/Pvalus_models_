@@ -1,0 +1,13 @@
+,Model_1,Model_2,P_Value
+0,LogisticRegression,LogisticRegressionCV,74.83669833729216
+1,LogisticRegression,SVC,849.863441780822
+2,LogisticRegression,MLPClassifier,1014.7419786096257
+3,LogisticRegressionCV,LogisticRegression,74.83669833729216
+4,LogisticRegressionCV,SVC,545.137168141593
+5,LogisticRegressionCV,MLPClassifier,649.12548828125
+6,SVC,LogisticRegression,849.863441780822
+7,SVC,LogisticRegressionCV,545.137168141593
+8,SVC,MLPClassifier,7.217231222385862
+9,MLPClassifier,LogisticRegression,1014.7419786096257
+10,MLPClassifier,LogisticRegressionCV,649.12548828125
+11,MLPClassifier,SVC,7.217231222385862

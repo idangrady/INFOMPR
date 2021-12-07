@@ -42,7 +42,6 @@ def model_get_best_grid_params(model):
 def ncnemars_test(y,model_1,model_2):
     
     output_matrix = np.zeros((2,2)) #creating the output matrix
-    np.sum()
     #check when model are inacuurate and place it in the right loc in the matrix
     output_matrix[1][0] = np.sum(np.where((y ==model_1 ) & (y!=model_2),1,0))  #model 1 TN or TP, modele 2 FN or FP
     output_matrix[0][1] = np.sum(np.where(((y !=model_1) & (y==model_2) ),1,0))  #model 2 TN or TP, modele 1 FN or FP
@@ -54,8 +53,8 @@ def ncnemars_test(y,model_1,model_2):
     
     
     #check if we can divide
-    if (output_matrix[1][0] - output_matrix[0][1] != 0):
-        p_value = ((abs(output_matrix[1][0]) - (output_matrix[0][1]))-1)**2 / (output_matrix[1][0] + output_matrix[0][1])
+    if (output_matrix[1][0] + output_matrix[0][1] != 0):
+        p_value = (((abs(output_matrix[1][0] - (output_matrix[0][1])))-1)**2 )/ ((output_matrix[1][0] + output_matrix[0][1]))
     # if not
     else:
         p_value  ="can not divided by 0: The false positive and false negative are equal"
@@ -64,6 +63,13 @@ def ncnemars_test(y,model_1,model_2):
 
 
 
+arr_ = np.array([[1,2,3,4,1,2,3,1]])
+arr_2 = np.array([[1,2,3,3,1,1,3,4]])
+
+y = np.array([[1,2,3,3,4,4,2,1]])
+assert y.shape ==arr_.shape ==arr_2.shape
+
+ncnemars_test(y, arr_, arr_2)
 mnist_data = pd.read_csv('mnist.csv').values
 
 labels = mnist_data[:, 0] # ==> <class 'numpy.ndarray'> original R 1x784
