@@ -15,7 +15,9 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support, mean_absolute_error
-from statsmodels.stats.contingency_tables import mcnemar
+#from statsmodels.stats.contingency_tables import mcnemar
+from mlxtend.evaluate import mcnemar
+
 
 
 def masked_non_zeros(data):
@@ -149,7 +151,10 @@ for prediction_1 in predictions_list:
             pass
         else:
             output_matrix, p_value= ncnemars_test(Y_test,prediction_1, prediction_2)
-            print(f"{model_1} {model_2} values: {mcnemar(output_matrix, exact = False)}")
+            
+            chi2, p = mcnemar(ary=output_matrix, corrected=True)
+
+            print(f"{model_1} {model_2} Chai: {chi2}, P: {p}")
            # tables.append((model_1,model_2,table,p_val, static))
 
             result_p_val = [model_1, model_2, p_value]
