@@ -1,0 +1,22 @@
+Accuracy of Predicting Majority Class: 0.11152380952380953
+Accuracy of Logistic Regression (penalty none) with feature(s) ink: 0.22692857142857142
+Accuracy of Logistic Regression (penalty none) with feature(s) area: 0.25511904761904763
+Accuracy of Logistic Regression (penalty none) with feature(s) border: 0.29228571428571426
+Accuracy of Logistic Regression (penalty none) with feature(s) ink and area: 0.2862619047619048
+Accuracy of Logistic Regression (penalty none) with feature(s) ink and border: 0.3538095238095238
+Accuracy of Logistic Regression (penalty none) with feature(s) area and border: 0.36873809523809525
+Accuracy of Logistic Regression (penalty none) with feature(s) ink and area and border: 0.4165
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink: 0.22483333333333333
+Accuracy of Logistic Regression (penalty l1) with feature(s) area: 0.25085714285714283
+Accuracy of Logistic Regression (penalty l1) with feature(s) border: 0.29404761904761906
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area: 0.2825
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink and border: 0.3463095238095238
+Accuracy of Logistic Regression (penalty l1) with feature(s) area and border: 0.3624047619047619
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area and border: 0.4089761904761905
+Accuracy of Logistic Regression (penalty l2) with feature(s) ink: 0.22473809523809524
+Accuracy of Logistic Regression (penalty l2) with feature(s) area: 0.25085714285714283
+Accuracy of Logistic Regression (penalty l2) with feature(s) border: 0.29404761904761906
+Accuracy of Logistic Regression (penalty l2) with feature(s) ink and area: 0.28195238095238095
+Accuracy of Logistic Regression (penalty l2) with feature(s) ink and border: 0.34604761904761905
+Accuracy of Logistic Regression (penalty l2) with feature(s) area and border: 0.3620952380952381
+Accuracy of Logistic Regression (penalty l2) with feature(s) ink and area and border: 0.4086190476190476
