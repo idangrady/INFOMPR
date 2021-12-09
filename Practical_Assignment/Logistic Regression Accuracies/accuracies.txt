@@ -6,13 +6,13 @@ Accuracy of Logistic Regression (penalty none) with feature(s) ink and area: 0.2
 Accuracy of Logistic Regression (penalty none) with feature(s) ink and border: 0.3538095238095238
 Accuracy of Logistic Regression (penalty none) with feature(s) area and border: 0.36873809523809525
 Accuracy of Logistic Regression (penalty none) with feature(s) ink and area and border: 0.4165
-Accuracy of Logistic Regression (penalty l1) with feature(s) ink: 0.22480952380952382
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink: 0.22483333333333333
 Accuracy of Logistic Regression (penalty l1) with feature(s) area: 0.25085714285714283
 Accuracy of Logistic Regression (penalty l1) with feature(s) border: 0.29404761904761906
-Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area: 0.2823809523809524
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area: 0.2824285714285714
 Accuracy of Logistic Regression (penalty l1) with feature(s) ink and border: 0.3462857142857143
-Accuracy of Logistic Regression (penalty l1) with feature(s) area and border: 0.36245238095238097
-Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area and border: 0.4088809523809524
+Accuracy of Logistic Regression (penalty l1) with feature(s) area and border: 0.3624047619047619
+Accuracy of Logistic Regression (penalty l1) with feature(s) ink and area and border: 0.4089761904761905
 Accuracy of Logistic Regression (penalty l2) with feature(s) ink: 0.22473809523809524
 Accuracy of Logistic Regression (penalty l2) with feature(s) area: 0.25085714285714283
 Accuracy of Logistic Regression (penalty l2) with feature(s) border: 0.29404761904761906
