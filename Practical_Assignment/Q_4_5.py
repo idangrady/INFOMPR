@@ -138,8 +138,8 @@ for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier(
     idx +=1
     
 saved_p_val =True
-df_p = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
-df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
+df_p = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
+df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
 output_matrixes_p_val = []
 
 tables = []
@@ -150,14 +150,14 @@ for prediction_1 in predictions_list:
         if (model_1 ==model_2):
             pass
         else:
-            output_matrix, p_value= ncnemars_test(Y_test,prediction_1, prediction_2)
+            output_matrix, chai= ncnemars_test(Y_test,prediction_1, prediction_2)
             
             chi2, p = mcnemar(ary=output_matrix, corrected=True)
 
             print(f"{model_1} {model_2} Chai: {chi2}, P: {p}")
            # tables.append((model_1,model_2,table,p_val, static))
 
-            result_p_val = [model_1, model_2, p_value]
+            result_p_val = [model_1, model_2, chai, p]
             df_2P.loc[len(result_p_val)] = result_p_val
             df_p = pd.concat([df_p, df_2P]).reset_index(drop = True)
             output_matrixes_p_val.append((model_1,model_2, output_matrix))
@@ -171,8 +171,8 @@ if saved_p_val:
     
 
 if save: 
-    df.to_csv("Models.csv", index = False)
-    with open("Confusion_Matrixes.txt", 'w') as output:       
+    df.to_csv("P_Values/Models.csv", index = False)
+    with open("P_Values/Confusion_Matrixes.txt", 'w') as output:       
         for mat in confusion_matrixes:
             (name_mat , matrix_) = mat
             output.write(str(name_mat) + '\n\n')
