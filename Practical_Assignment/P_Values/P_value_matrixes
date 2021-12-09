@@ -1,37 +1,37 @@
 models: LogisticRegression , LogisticRegressionCV
 
-[[ 2687.   724.]
- [  361. 29828.]]models: LogisticRegression , SVC
+[[ 2396.  1033.]
+ [  683. 29488.]]models: LogisticRegression , SVC
 
-[[ 1479.  1932.]
- [  437. 29752.]]models: LogisticRegression , MLPClassifier
+[[ 1448.  1981.]
+ [  421. 29750.]]models: LogisticRegression , MLPClassifier
 
-[[ 1517.  1894.]
- [  365. 29824.]]models: LogisticRegressionCV , LogisticRegression
+[[ 1501.  1928.]
+ [  352. 29819.]]models: LogisticRegressionCV , LogisticRegression
 
-[[ 2687.   361.]
- [  724. 29828.]]models: LogisticRegressionCV , SVC
+[[ 2396.   683.]
+ [ 1033. 29488.]]models: LogisticRegressionCV , SVC
 
-[[ 1472.  1576.]
- [  444. 30108.]]models: LogisticRegressionCV , MLPClassifier
+[[ 1399.  1680.]
+ [  470. 30051.]]models: LogisticRegressionCV , MLPClassifier
 
-[[ 1500.  1548.]
- [  382. 30170.]]models: SVC , LogisticRegression
+[[ 1415.  1664.]
+ [  438. 30083.]]models: SVC , LogisticRegression
 
-[[ 1479.   437.]
- [ 1932. 29752.]]models: SVC , LogisticRegressionCV
+[[ 1448.   421.]
+ [ 1981. 29750.]]models: SVC , LogisticRegressionCV
 
-[[ 1472.   444.]
- [ 1576. 30108.]]models: SVC , MLPClassifier
+[[ 1399.   470.]
+ [ 1680. 30051.]]models: SVC , MLPClassifier
 
-[[ 1214.   702.]
- [  668. 31016.]]models: MLPClassifier , LogisticRegression
+[[ 1183.   686.]
+ [  670. 31061.]]models: MLPClassifier , LogisticRegression
 
-[[ 1517.   365.]
- [ 1894. 29824.]]models: MLPClassifier , LogisticRegressionCV
+[[ 1501.   352.]
+ [ 1928. 29819.]]models: MLPClassifier , LogisticRegressionCV
 
-[[ 1500.   382.]
- [ 1548. 30170.]]models: MLPClassifier , SVC
+[[ 1415.   438.]
+ [ 1664. 30083.]]models: MLPClassifier , SVC
 
-[[ 1214.   668.]
- [  702. 31016.]]
+[[ 1183.   670.]
+ [  686. 31061.]]

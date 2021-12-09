@@ -15,7 +15,9 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.metrics import precision_recall_fscore_support, mean_absolute_error
-from statsmodels.stats.contingency_tables import mcnemar
+#from statsmodels.stats.contingency_tables import mcnemar
+from mlxtend.evaluate import mcnemar
+
 
 
 def masked_non_zeros(data):
@@ -42,7 +44,6 @@ def model_get_best_grid_params(model):
 def ncnemars_test(y,model_1,model_2):
     
     output_matrix = np.zeros((2,2)) #creating the output matrix
-    np.sum()
     #check when model are inacuurate and place it in the right loc in the matrix
     output_matrix[1][0] = np.sum(np.where((y ==model_1 ) & (y!=model_2),1,0))  #model 1 TN or TP, modele 2 FN or FP
     output_matrix[0][1] = np.sum(np.where(((y !=model_1) & (y==model_2) ),1,0))  #model 2 TN or TP, modele 1 FN or FP
@@ -54,8 +55,8 @@ def ncnemars_test(y,model_1,model_2):
     
     
     #check if we can divide
-    if (output_matrix[1][0] - output_matrix[0][1] != 0):
-        p_value = ((abs(output_matrix[1][0]) - (output_matrix[0][1]))-1)**2 / (output_matrix[1][0] + output_matrix[0][1])
+    if (output_matrix[1][0] + output_matrix[0][1] != 0):
+        p_value = (((abs(output_matrix[1][0] - (output_matrix[0][1])))-1)**2 )/ ((output_matrix[1][0] + output_matrix[0][1]))
     # if not
     else:
         p_value  ="can not divided by 0: The false positive and false negative are equal"
@@ -64,6 +65,13 @@ def ncnemars_test(y,model_1,model_2):
 
 
 
+arr_ = np.array([[1,2,3,4,1,2,3,1]])
+arr_2 = np.array([[1,2,3,3,1,1,3,4]])
+
+y = np.array([[1,2,3,3,4,4,2,1]])
+assert y.shape ==arr_.shape ==arr_2.shape
+
+ncnemars_test(y, arr_, arr_2)
 mnist_data = pd.read_csv('mnist.csv').values
 
 labels = mnist_data[:, 0] # ==> <class 'numpy.ndarray'> original R 1x784
@@ -130,8 +138,8 @@ for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier(
     idx +=1
     
 saved_p_val =True
-df_p = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
-df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "P_Value"))
+df_p = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
+df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
 output_matrixes_p_val = []
 
 tables = []
@@ -142,11 +150,14 @@ for prediction_1 in predictions_list:
         if (model_1 ==model_2):
             pass
         else:
-            output_matrix, p_value= ncnemars_test(Y_test,prediction_1, prediction_2)
-            print(f"{model_1} {model_2} values: {mcnemar(output_matrix, exact = False)}")
+            output_matrix, chai= ncnemars_test(Y_test,prediction_1, prediction_2)
+            
+            chi2, p = mcnemar(ary=output_matrix, corrected=True)
+
+            print(f"{model_1} {model_2} Chai: {chi2}, P: {p}")
            # tables.append((model_1,model_2,table,p_val, static))
 
-            result_p_val = [model_1, model_2, p_value]
+            result_p_val = [model_1, model_2, chai, p]
             df_2P.loc[len(result_p_val)] = result_p_val
             df_p = pd.concat([df_p, df_2P]).reset_index(drop = True)
             output_matrixes_p_val.append((model_1,model_2, output_matrix))
@@ -160,8 +171,8 @@ if saved_p_val:
     
 
 if save: 
-    df.to_csv("Models.csv", index = False)
-    with open("Confusion_Matrixes.txt", 'w') as output:       
+    df.to_csv("P_Values/Models.csv", index = False)
+    with open("P_Values/Confusion_Matrixes.txt", 'w') as output:       
         for mat in confusion_matrixes:
             (name_mat , matrix_) = mat
             output.write(str(name_mat) + '\n\n')
