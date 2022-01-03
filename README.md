@@ -5,8 +5,7 @@
 
 # Participants
 ## Practical Assignment:
-Temelko Angel,
-Fluiter Marc,
+Fluiter Marc
 Grady Idan
 ## Group Assignment
 Fluiter Marc,
