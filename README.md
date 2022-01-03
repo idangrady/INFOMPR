@@ -5,7 +5,7 @@
 
 # Participants
 ## Practical Assignment:
-Fluiter Marc
+Fluiter Marc,
 Grady Idan
 ## Group Assignment
 Fluiter Marc,
