@@ -13,6 +13,7 @@ import re
 from bs4 import BeautifulSoup
 from utils import contraction_mapping
 from nltk.corpus import stopwords
+import pickle
 
 
 
@@ -62,7 +63,6 @@ def X_weighted(X: FloatTensor)->FloatTensor:
     """
     max_value = X.max()
     return (torch.where(X==max_value,X, X/max_value))
-
 
 def loss_(
         X_weighted: FloatTensor,
@@ -116,6 +116,13 @@ class word_embedding(nn.Module):
         """
         embedding_input = torch.arange(self.vocab_len).to(self.device)
         return(self.embedding_w,self.embedding_wc)
+    
+    def saved_load(self, filename:str, what: str):
+        if what=='wb':
+            pickle.dump(self, filename, what)
+        elif what=='rb':
+            return pickle.load(open(filename, what))
+    
 
     
     
