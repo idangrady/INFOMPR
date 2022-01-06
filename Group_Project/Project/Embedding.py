@@ -114,14 +114,10 @@ class word_embedding(nn.Module):
         function that receives no input and produces the word vectors and 
         context word vectors of all words
         """
+        # return the entire sequence
         embedding_input = torch.arange(self.vocab_len).to(self.device)
         return(self.embedding_w,self.embedding_wc)
     
-    def saved_load(self, filename:str, what: str):
-        if what=='wb':
-            pickle.dump(self, filename, what)
-        elif what=='rb':
-            return pickle.load(open(filename, what))
     
 
     

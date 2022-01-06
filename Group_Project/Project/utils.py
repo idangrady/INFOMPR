@@ -4,6 +4,13 @@ Utils libraries
 Construction mapping
 """
 
+# imports
+import numpy as np
+import torch
+import pickle
+
+
+
 contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot", "'cause": "because", "could've": "could have", "couldn't": "could not",
 
                            "didn't": "did not", "doesn't": "does not", "don't": "do not", "hadn't": "had not", "hasn't": "has not", "haven't": "have not",
@@ -49,3 +56,9 @@ contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot",
                            "you'd": "you would", "you'd've": "you would have", "you'll": "you will", "you'll've": "you will have",
 
                            "you're": "you are", "you've": "you have"}
+
+def saved_load(self, filename:str, what: str):
+    if what=='wb':
+        pickle.dump(self, filename, what)
+    elif what=='rb':
+        return pickle.load(open(filename, what))
