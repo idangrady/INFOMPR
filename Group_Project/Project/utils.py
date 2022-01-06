@@ -8,7 +8,8 @@ Construction mapping
 import numpy as np
 import torch
 import pickle
-
+from torch import Tensor
+from torch import FloatTensor, LongTensor
 
 
 contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot", "'cause": "because", "could've": "could have", "couldn't": "could not",
@@ -62,3 +63,24 @@ def saved_load(self, filename:str, what: str):
         pickle.dump(self, filename, what)
     elif what=='rb':
         return pickle.load(open(filename, what))
+
+
+def w_2_onehot(vocab:dict[str,int], words: list)->FloatTensor:
+    """ 
+    return one hot vertor from a list of words based on their index in the dic vocab
+    """
+    output =Tensor.zeros((1, len(vocab))).reshape(1,-1) 
+    for idx, word in enumerate(words):
+        idx_word = vocab[word]
+        curr_one_hot = Tensor.zeros((1, len(vocab))).reshape(1,-1)  
+        curr_one_hot[idx_word] = 1
+        if idx==0:
+            output = curr_one_hot
+        else: torch.cat((output, curr_one_hot), axis = 0)
+        
+    # return their one hot matrix. vector
+    return output    
+    
+    
+    
+    
