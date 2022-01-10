@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from utils import contraction_mapping
 from nltk.corpus import stopwords
 import pickle
+print("Loaded packages")
 
 
 
@@ -81,7 +82,7 @@ class word_embedding(nn.Module):
     """
     
     def __init__(self,vocab: Dict[str, int], 
-                 num_emb = 15, 
+                 num_emb : 15,
                  device: str="cpu")-> None :
         super(word_embedding, self).__init__()
         
@@ -120,5 +121,4 @@ class word_embedding(nn.Module):
     
     
 
-    
-    
+
