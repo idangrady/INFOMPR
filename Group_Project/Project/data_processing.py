@@ -134,7 +134,11 @@ def example_generator(data_path, single_pass):
         len_bytes = reader.read(8)
         if not len_bytes: break # finished reading this file
         str_len = struct.unpack('q', len_bytes)[0]
+        # TODO: str_len is probably only the length of one article when we work with the chunked binaries?
         example_str = struct.unpack('%ds' % str_len, reader.read(str_len))[0]
+        # TODO: understand how this works: apparently we read from the .bin files and are able to use this unpacking
+        # to get a string of the full article with it's abstract; then we yield a tf.Example object for each article
+        # but why do we go back to tf.Example instead of just yielding the example_str?
         yield example_pb2.Example.FromString(example_str)
     if single_pass:
       print "example_generator completed reading all datafiles. No more data."

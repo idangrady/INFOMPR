@@ -79,7 +79,7 @@ def w_2_onehot(vocab:dict[str,int], words: list)->FloatTensor:
         else: torch.cat((output, curr_one_hot), axis = 0)
         
     # return their one hot matrix. vector
-    return output    
+    return output
     
     
     

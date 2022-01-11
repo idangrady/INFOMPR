@@ -164,11 +164,11 @@ def setup_training(model, batcher):
 
   model.build_graph() # build the graph
   # TODO: take this out, converage and restore_best_model is irrelevant for us
-  if FLAGS.convert_to_coverage_model:
-    assert FLAGS.coverage, "To convert your non-coverage model to a coverage model, run with convert_to_coverage_model=True and coverage=True"
-    convert_to_coverage_model()
-  if FLAGS.restore_best_model:
-    restore_best_model()
+#   if FLAGS.convert_to_coverage_model:
+#     assert FLAGS.coverage, "To convert your non-coverage model to a coverage model, run with convert_to_coverage_model=True and coverage=True"
+#     convert_to_coverage_model()
+#   if FLAGS.restore_best_model:
+#     restore_best_model()
 
   saver = tf.train.Saver(max_to_keep=3) # keep 3 checkpoints at a time
 
@@ -178,7 +178,7 @@ def setup_training(model, batcher):
                      summary_op=None,
                      save_summaries_secs=60, # save summaries for tensorboard every 60 secs
                      save_model_secs=60, # checkpoint every 60 secs
-                     # TODO: figure out where global_step is coming from in the model
+                     # TODO: figure out where global_step is coming from in the model -- I think created when building the graph
                      global_step=model.global_step)
   summary_writer = sv.summary_writer
   tf.logging.info("Preparing or waiting for session...")
@@ -284,6 +284,7 @@ def run_eval(model, batcher, vocab):
 
 
 def main(unused_argv):
+    # TODO: figure out where flags have been parsed before
   if len(unused_argv) != 1: # prints a message if you've entered flags incorrectly
     raise Exception("Problem with flags: %s" % unused_argv)
 
@@ -291,6 +292,7 @@ def main(unused_argv):
   tf.logging.info('Starting seq2seq_attention in %s mode...', (FLAGS.mode))
 
   # Change log_root to FLAGS.log_root/FLAGS.exp_name and create the dir if necessary
+  # TODO: figure out where FLAGS is being created; why can we just access it here?
   FLAGS.log_root = os.path.join(FLAGS.log_root, FLAGS.exp_name)
   if not os.path.exists(FLAGS.log_root):
     if FLAGS.mode=="train":
@@ -300,7 +302,7 @@ def main(unused_argv):
 
   vocab = Vocab(FLAGS.vocab_path, FLAGS.vocab_size) # create a vocabulary
 
-  # TODO: understand this
+  # TODO: understand why batch_size = beam_size?
   # If in decode mode, set batch_size = beam_size
   # Reason: in decode mode, we decode one example at a time.
   # On each step, we have beam_size-many hypotheses in the beam, so we need to make a batch of these hypotheses.
@@ -320,21 +322,24 @@ def main(unused_argv):
   hps = namedtuple("HParams", hps_dict.keys())(**hps_dict)
 
   # Create a batcher object that will create minibatches of data
+  # TODO: understand batcher
   batcher = Batcher(FLAGS.data_path, vocab, hps, single_pass=FLAGS.single_pass)
 
   tf.set_random_seed(111) # a seed value for randomness
 
-  if hps.mode == 'train':
-    print "creating model..."
+  if (hps.mode) == 'train':
+    print("creating model...")
     model = SummarizationModel(hps, vocab)
     setup_training(model, batcher)
-  elif hps.mode == 'eval':
+  elif (hps.mode) == 'eval':
     model = SummarizationModel(hps, vocab)
     run_eval(model, batcher, vocab)
-  elif hps.mode == 'decode':
+  elif (hps.mode) == 'decode':
     decode_model_hps = hps  # This will be the hyperparameters for the decoder model
+    # TODO: understand "the batches need to contain the full summaries"
     decode_model_hps = hps._replace(max_dec_steps=1) # The model is configured with max_dec_steps=1 because we only ever run one step of the decoder at a time (to do beam search). Note that the batcher is initialized with max_dec_steps equal to e.g. 100 because the batches need to contain the full summaries
     model = SummarizationModel(decode_model_hps, vocab)
+    # TODO: understand BeamSearchDecoder
     decoder = BeamSearchDecoder(model, batcher, vocab)
     decoder.decode() # decode indefinitely (unless single_pass=True, in which case deocde the dataset exactly once)
   else:
