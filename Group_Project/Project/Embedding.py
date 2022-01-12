@@ -14,7 +14,8 @@ from bs4 import BeautifulSoup
 from utils import contraction_mapping
 from nltk.corpus import stopwords
 import pickle
-print("Loaded packages")
+from utils import saved_load, word_to_idx
+print("Libraries Embedding Loaded succussfuly")
 
 
 
@@ -42,19 +43,7 @@ def clean_data(text,num)->List:
             long_words.append(i)   
     return (" ".join(long_words)).strip()
 
-def word_to_idx(data)-> dict:
-    """ 
-    Function that maps the data and return a dictionary of words corresponding to their index
-    
-    return: 
-        dict 1 idx to word
-        dict 2 word to idx
-    """
-    set_words  = set(data) # eliminate duplicates in the text
-    w_2_i = {set_words[i]:i for i in range(len(set_words))}
-    i_2_w = {i:set_words[i] for i in range(len(set_words))}
-    
-    return (w_2_i, i_2_w)
+
 
 def X_weighted(X: FloatTensor)->FloatTensor:
     """ 
@@ -119,6 +108,13 @@ class word_embedding(nn.Module):
         embedding_input = torch.arange(self.vocab_len).to(self.device)
         return(self.embedding_w,self.embedding_wc)
     
-    
 
 
+# read csv file from reviews
+df = pd.read_csv(r'C:\Users\User\Documents\GitHub\INFOMPR\Group_Project\Project\data_\Reviews.csv.csv', ',')
+
+summeries = df.Summary
+texts = df.Text
+
+print()
+print(word_to_idx([texts[1:5]]))

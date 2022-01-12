@@ -10,7 +10,8 @@ import torch
 import pickle
 from torch import Tensor
 from torch import FloatTensor, LongTensor
-
+from easydict import EasyDict as edict
+print("Libraries Utilis Loaded succussfuly")
 
 contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot", "'cause": "because", "could've": "could have", "couldn't": "could not",
 
@@ -58,11 +59,11 @@ contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot",
 
                            "you're": "you are", "you've": "you have"}
 
-def saved_load(self, filename:str, what: str):
+def saved_load(self, filename:str,filepate: str,  what: str):
     if what=='wb':
         pickle.dump(self, filename, what)
     elif what=='rb':
-        return pickle.load(open(filename, what))
+        return pickle.load(open(filepate, what))
 
 
 def w_2_onehot(vocab:dict[str,int], words: list)->FloatTensor:
@@ -79,8 +80,24 @@ def w_2_onehot(vocab:dict[str,int], words: list)->FloatTensor:
         else: torch.cat((output, curr_one_hot), axis = 0)
         
     # return their one hot matrix. vector
-    return output    
-    
-    
-    
+    return output
+
+def word_to_idx(data: list) -> dict:
+    """
+    Function that maps the data and return a dictionary of words corresponding to their index
+    it gets a list
+    return:
+        dict 1 idx to word
+        dict 2 word to idx
+    """
+    total_letters = [letters for sublist in data for subsublist in sublist for letters in subsublist]
+    unique_letters =set(total_letters)
+    total_words = [word.replace(',','') for sublist in data for subsublist in sublist for word in subsublist.split()]
+    unique_words =list(set(total_words))
+
+    w_2_i = {unique_words[i]:i for i in range(len(unique_words))}
+    i_2_w= {i: unique_words[i] for i in range(len(unique_words))}
+    print(w_2_i)
+    input()
+    return (w_2_i, i_2_w)
     
