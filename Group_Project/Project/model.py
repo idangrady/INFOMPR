@@ -26,6 +26,8 @@ from tensorflow.contrib.tensorboard.plugins import projector
 
 FLAGS = tf.app.flags.FLAGS
 
+# TODO: when running our first tests, maybe replace the LSTMs by simple RNNs and see what happens;
+# if we stick with LSTM, we should at least make it unidirectional
 class SummarizationModel(object):
   """A class to represent a sequence-to-sequence model for text summarization. Supports both baseline mode, pointer-generator mode, and coverage"""
 
@@ -41,6 +43,7 @@ class SummarizationModel(object):
     self._enc_batch = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch')
     self._enc_lens = tf.placeholder(tf.int32, [hps.batch_size], name='enc_lens')
     self._enc_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, None], name='enc_padding_mask')
+    # TODO: remove/skip this for now
     if FLAGS.pointer_gen:
       self._enc_batch_extend_vocab = tf.placeholder(tf.int32, [hps.batch_size, None], name='enc_batch_extend_vocab')
       self._max_art_oovs = tf.placeholder(tf.int32, [], name='max_art_oovs')
@@ -50,6 +53,7 @@ class SummarizationModel(object):
     self._target_batch = tf.placeholder(tf.int32, [hps.batch_size, hps.max_dec_steps], name='target_batch')
     self._dec_padding_mask = tf.placeholder(tf.float32, [hps.batch_size, hps.max_dec_steps], name='dec_padding_mask')
 
+    # TODO: remove/skip this for now
     if hps.mode=="decode" and hps.coverage:
       self.prev_coverage = tf.placeholder(tf.float32, [hps.batch_size, None], name='prev_coverage')
 
@@ -87,9 +91,15 @@ class SummarizationModel(object):
       fw_state, bw_state:
         Each are LSTMStateTuples of shape ([batch_size,hidden_dim],[batch_size,hidden_dim])
     """
+    # check https://docs.w3cub.com/tensorflow~python/tf/contrib/rnn/lstmcell to understand
+    # useful for when we want to dumb it down: https://www.tutorialexample.com/understand-tf-nn-dynamic_rnn-for-tensorflow-beginners-tensorflow-tutorial/
+    # useful for the current bidirectional setting: https://www.tutorialexample.com/an-introduction-to-how-tensorflow-bidirectional-dynamic-rnn-process-variable-length-sequence-lstm-tutorial/
+    # keep in mind: this is deprecated, now we should use keras; however the API seems to be the same
     with tf.variable_scope('encoder'):
       cell_fw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
       cell_bw = tf.contrib.rnn.LSTMCell(self._hps.hidden_dim, initializer=self.rand_unif_init, state_is_tuple=True)
+      # encoder outputs is also a tuple, that contains the final outputs of the cells
+      # fw_st and bw_st however contain the final states of the cells
       (encoder_outputs, (fw_st, bw_st)) = tf.nn.bidirectional_dynamic_rnn(cell_fw, cell_bw, encoder_inputs, dtype=tf.float32, sequence_length=seq_len, swap_memory=True)
       encoder_outputs = tf.concat(axis=2, values=encoder_outputs) # concatenate the forwards and backwards states
     return encoder_outputs, fw_st, bw_st
@@ -107,7 +117,7 @@ class SummarizationModel(object):
     """
     hidden_dim = self._hps.hidden_dim
     with tf.variable_scope('reduce_final_st'):
-
+        # TODO: figure out where this is being trained
       # Define weights and biases to reduce the cell and reduce the state
       w_reduce_c = tf.get_variable('w_reduce_c', [hidden_dim * 2, hidden_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
       w_reduce_h = tf.get_variable('w_reduce_h', [hidden_dim * 2, hidden_dim], dtype=tf.float32, initializer=self.trunc_norm_init)
