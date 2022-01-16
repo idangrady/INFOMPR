@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 
 # TODO: discuss if we only use the train_*.bin files and separate them into train, val, and test because those are already 287,113 articles
 # if we only use train, we should remove mode to make it less misleading
-news_data=pd.DataFrame(get_data(n = -1, mode = "train"))
+news_data=pd.DataFrame(get_data(n = 10000, mode = "train"))
 news_data = news_data.transpose()
 print(news_data.shape) #Analyzing the shape of the dataset
 news_data.head(n=10)
@@ -114,25 +114,25 @@ def text_cleaner(text,num):
     return (" ".join(long_words)).strip()
 
 #Calling the function
-cleaned_text = []
+cleaned_article = []
 for t in news_data['Article']:
-    cleaned_text.append(text_cleaner(t,0))
+    cleaned_article.append(text_cleaner(t,0))
 
 news_data['Article'][:10] #Looking at the 'Article' column of the dataset
 
-cleaned_text[:10] #Looking at the article after removing stop words, special characters , punctuations etc.
+cleaned_article[:10] #Looking at the article after removing stop words, special characters , punctuations etc.
 
 #Summary Cleaning 
-cleaned_summary = []    #Using the text_cleaner function for cleaning summary too
+cleaned_abstract = []    #Using the text_cleaner function for cleaning summary too
 for t in news_data['Abstract']:
-    cleaned_summary.append(text_cleaner(t,1))
+    cleaned_abstract.append(text_cleaner(t,1))
 
 news_data['Abstract'][:10]
 
-cleaned_summary[:10]
+cleaned_abstract[:10]
 
-news_data['Cleaned_Article'] = cleaned_text  #Adding cleaned article to the dataset
-news_data['Cleaned_Abstract'] = cleaned_summary  #Adding cleaned abstract to the dataset
+news_data['Cleaned_Article'] = cleaned_article  #Adding cleaned article to the dataset
+news_data['Cleaned_Abstract'] = cleaned_abstract  #Adding cleaned abstract to the dataset
 #Dropping Empty Rows
 news_data['Cleaned_Abstract'].replace('', np.nan, inplace=True)
 #Dropping rows with Missing values
@@ -152,6 +152,7 @@ for i in range(5):
     print("Abstract:",news_data['Cleaned_Abstract'][i])
     print("\n")
 
+# TODO: this whole part can go, not interesting
 #Data Visualization
 import matplotlib.pyplot as plt
 article_word_count = []
@@ -168,171 +169,175 @@ length_df = pd.DataFrame({'article':article_word_count, 'abstract':abstract_word
 length_df.hist(bins = 30)
 plt.show()
 
-# #Function for getting the Maximum Review length  
-# count=0 
-# for i in news_data['Cleaned_Text']:
-#     if(len(i.split())<=35):
-#         count=count+1
-# print(count/len(news_data['Cleaned_Text']))
+#Function for getting the Maximum Article length  
+count=0 
+for i in news_data['Cleaned_Article']:
+    if(len(i.split())<=35):
+        count=count+1
+print(count/len(news_data['Cleaned_Article']))
 
-# #Function for getting the Maximum Summary length
-# count=0
-# for i in news_data['Cleaned_Summary']:
-#     if(len(i.split())<=8):
-#         count=count+1
-# print(count/len(news_data['Cleaned_Summary']))
+#Function for getting the Maximum Abstract length
+count=0
+for i in news_data['Cleaned_Abstract']:
+    if(len(i.split())<=8):
+        count=count+1
+print(count/len(news_data['Cleaned_Abstract']))
 
-# #From the above data we got an idea about maximum lengths of review and summary
-# max_text_len = 35
-# max_summary_len = 8
+#From the above data we got an idea about maximum lengths of article and abstract
+max_article_len = 35
+max_abstract_len = 8
 
-# # TODO: so what we calculate above are just the fractions of reviews/summaries that are <= than the "max length"
-# # which is not really a max length but just "an idea"?
+# TODO: so what we calculate above are just the fractions of reviews/summaries that are <= than the "max length"
+# which is not really a max length but just "an idea"?
 
-# cleaned_text =np.array(news_data['Cleaned_Text'])
-# cleaned_summary=np.array(news_data['Cleaned_Summary'])
+cleaned_article =np.array(news_data['Cleaned_Article'])
+cleaned_abstract=np.array(news_data['Cleaned_Abstract'])
 
-# short_text=[]
-# short_summary=[]
+short_article=[]
+short_abstract=[]
 
-# # only keep the articles and the summary when they are smaller than the max lengths
-# for i in range(len(cleaned_text)):
-#     if(len(cleaned_summary[i].split())<=max_summary_len and len(cleaned_text[i].split())<=max_text_len):
-#         short_text.append(cleaned_text[i])
-#         short_summary.append(cleaned_summary[i])
+# only keep the articles and the abstract when they are smaller than the max lengths
+for i in range(len(cleaned_article)):
+    if(len(cleaned_abstract[i].split())<=max_abstract_len and len(cleaned_article[i].split())<=max_article_len):
+        short_article.append(cleaned_article[i])
+        short_abstract.append(cleaned_abstract[i])
         
-# df=pd.DataFrame({'text':short_text,'summary':short_summary})
+df=pd.DataFrame({'article':short_article,'abstract':short_abstract})
 
-# #Adding START and END tags/tokens to summary for better decoding
-# df['summary'] = df['summary'].apply(lambda x : 'sostok '+ x + ' eostok')
+#Adding START and END tags/tokens to abstract for better decoding
+df['abstract'] = df['abstract'].apply(lambda x : 'sostok '+ x + ' eostok')
 
-# #Splitting the Dataset
-# from sklearn.model_selection import train_test_split
-# X_train,X_test,y_train,y_test=train_test_split(np.array(df['text']),np.array(df['summary']),test_size=0.2,random_state=0,shuffle=True)
+#Splitting the Dataset twice to get 80% training data, 15% of validation data and 5% of test data
+from sklearn.model_selection import train_test_split
+X_train,X_val,y_train,y_val=train_test_split(np.array(df['article']),np.array(df['abstract']),test_size=0.2,random_state=0,shuffle=True)
+X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size = 0.25, random_state = 0, shuffle = True)
 
-# #Preparing Tokenizer
+#Preparing Tokenizer
 
-# #Text Tokenizer
-# from keras.preprocessing.text import Tokenizer 
-# from keras.preprocessing.sequence import pad_sequences
+#Text Tokenizer
+from keras.preprocessing.text import Tokenizer 
+from keras.preprocessing.sequence import pad_sequences
 
-# #preparing a tokenizer for reviews on training data
-# X_tokenizer = Tokenizer() 
-# X_tokenizer.fit_on_texts(list(X_train))
+#preparing a tokenizer on training data
+X_tokenizer = Tokenizer() 
+X_tokenizer.fit_on_texts(list(X_train))
 
-# #Rarewords and their coverage in review
-# thresh = 4  #If a word whose count is less than threshold i.e 4, then it's considered as rare word 
+#Rarewords and their coverage in the article
+thresh = 4  #If a word whose count is less than threshold i.e 4, then it's considered as rare word 
 
-# cnt = 0      #denotes no. of rare words whose count falls below threshold
-# tot_cnt = 0  #denotes size of unique words in the text
-# freq = 0
-# tot_freq = 0
+cnt = 0      #denotes no. of rare words whose count falls below threshold
+tot_cnt = 0  #denotes size of unique words in the text
+freq = 0
+tot_freq = 0
 
-# for key,value in X_tokenizer.word_counts.items():
-#     tot_cnt=tot_cnt+1
-#     tot_freq=tot_freq+value
-#     if(value<thresh):
-#         cnt=cnt+1
-#         freq=freq+value
+for key,value in X_tokenizer.word_counts.items():
+    tot_cnt=tot_cnt+1
+    tot_freq=tot_freq+value
+    if(value<thresh):
+        cnt=cnt+1
+        freq=freq+value
     
-# print("% of rare words in vocabulary:",(cnt/tot_cnt)*100)
-# print("Total Coverage of rare words:",(freq/tot_freq)*100)
+print("% of rare words in vocabulary:",(cnt/tot_cnt)*100)
+print("Total Coverage of rare words:",(freq/tot_freq)*100)
 
-# #Defining the Tokenizer with top most common words for reviews
+#Defining the Tokenizer with top most common words for articles
 
-# #Preparing a Tokenizer for reviews on training data
-# # TODO: why is this not just cnt? tot_cnt-cnt doesn't give the words we defined as rare words?
-# X_tokenizer = Tokenizer(num_words=tot_cnt-cnt)   #provides top most common words
-# X_tokenizer.fit_on_texts(list(X_train))
+#Preparing a Tokenizer for articles on training data
+# TODO: why is this not just cnt? tot_cnt-cnt doesn't give the words we defined as rare words?
+X_tokenizer = Tokenizer(num_words=tot_cnt-cnt)   #provides top most common words
+X_tokenizer.fit_on_texts(list(X_train))
 
-# #Converting text sequences into integer sequences
-# X_train_seq    =   X_tokenizer.texts_to_sequences(X_train) 
-# X_test_seq   =   X_tokenizer.texts_to_sequences(X_test)
+#Converting text sequences into integer sequences; note that we use the vocabulary that was generated on the
+# training data to generate the validation and test sequences as well
+X_train_seq    =   X_tokenizer.texts_to_sequences(X_train) 
+X_val_seq   =   X_tokenizer.texts_to_sequences(X_val)
+X_test_seq = X_tokenizer.texts_to_sequences(X_train)
 
-# #Padding zero upto maximum length
-# X_train    =   pad_sequences(X_train_seq,  maxlen = max_text_len, padding = 'post')
-# X_test   =   pad_sequences(X_test_seq, maxlen = max_text_len, padding = 'post')
+#Padding zero upto maximum length; we want one length so we can make the encoder max_article_len
+X_train    =   pad_sequences(X_train_seq,  maxlen = max_article_len, padding = 'post')
+X_val   =   pad_sequences(X_val_seq, maxlen = max_article_len, padding = 'post')
+X_test = pad_sequences(X_val_seq, maxlen = max_article_len, padding = 'post')
 
-# #Size of vocabulary (+1 for padding token)
-# X_voc   =  X_tokenizer.num_words + 1
 
-# X_voc
+#Size of vocabulary (+1 for padding token)
+X_voc   =  X_tokenizer.num_words + 1
 
-# #Summary Tokenizer
+#Abstract Tokenizer
 
-# #Preparing a Tokenizer for summaries on training data
-# y_tokenizer = Tokenizer()   
-# y_tokenizer.fit_on_texts(list(y_train))
+#Preparing a Tokenizer for abstracts on training data
+y_tokenizer = Tokenizer()   
+y_tokenizer.fit_on_texts(list(y_train))
 
-# #Rarewords and their coverage in summary
+#Rarewords and their coverage in summary
 
-# thresh = 6  ##If a word whose count is less than threshold i.e 6, then it's considered as rare word 
+thresh = 6  ##If a word whose count is less than threshold i.e 6, then it's considered as rare word 
 
-# cnt = 0
-# tot_cnt = 0
-# freq = 0
-# tot_freq = 0
+cnt = 0
+tot_cnt = 0
+freq = 0
+tot_freq = 0
 
-# for key,value in y_tokenizer.word_counts.items():
-#     tot_cnt = tot_cnt+1
-#     tot_freq = tot_freq+value
-#     if(value<thresh):
-#         cnt = cnt+1
-#         freq = freq+value
+for key,value in y_tokenizer.word_counts.items():
+    tot_cnt = tot_cnt+1
+    tot_freq = tot_freq+value
+    if(value<thresh):
+        cnt = cnt+1
+        freq = freq+value
     
-# print("% of rare words in vocabulary:",(cnt/tot_cnt)*100)
-# print("Total Coverage of rare words:",(freq/tot_freq)*100)
+print("% of rare words in vocabulary:",(cnt/tot_cnt)*100)
+print("Total Coverage of rare words:",(freq/tot_freq)*100)
 
-# #Defining Tokenizer with the most common words in summary
+#Defining Tokenizer with the most common words in abstract
 
-# #Preparing a tokenizer for summaries on training data
-# y_tokenizer = Tokenizer(num_words=tot_cnt-cnt)  #provides top most common words
-# y_tokenizer.fit_on_texts(list(y_train))
+#Preparing a tokenizer for abstracts on training data
+y_tokenizer = Tokenizer(num_words=tot_cnt-cnt)  #provides top most common words
+y_tokenizer.fit_on_texts(list(y_train))
 
-# #Converting text sequences into integer sequences
-# y_train_seq    =   y_tokenizer.texts_to_sequences(y_train) 
-# y_test_seq   =   y_tokenizer.texts_to_sequences(y_test) 
+#Converting text sequences into integer sequences
+y_train_seq    =   y_tokenizer.texts_to_sequences(y_train) 
+y_val_seq   =   y_tokenizer.texts_to_sequences(y_val) 
+y_test_seq   =   y_tokenizer.texts_to_sequences(y_test) 
 
-# #Padding zero upto maximum length
-# y_train    =   pad_sequences(y_train_seq, maxlen=max_summary_len, padding='post')
-# y_test   =   pad_sequences(y_test_seq, maxlen=max_summary_len, padding='post')
+#Padding zero upto maximum length
+y_train    =   pad_sequences(y_train_seq, maxlen=max_abstract_len, padding='post')
+y_val   =   pad_sequences(y_val_seq, maxlen=max_abstract_len, padding='post')
+y_test = pad_sequences(y_test_seq, maxlen=max_abstract_len, padding='post')
 
-# #size of vocabulary
-# y_voc  =   y_tokenizer.num_words +1
 
-# y_voc
+#size of vocabulary
+y_voc  =   y_tokenizer.num_words +1
 
-# #Checking the length of training data
-# # TODO: what does this line do? those two statements should deliver the same results right?
-# y_tokenizer.word_counts['sostok'],len(y_train)
+#Checking the length of training data
+# TODO: what does this line do? those two statements should deliver the same results right?
+y_tokenizer.word_counts['sostok'],len(y_train)
 
-# # TODO: why would I want to delete them? I just added them for this reason? also don't understand the code
-# #Deleting rows containing START and END tokens
-# #For Training set
-# ind=[]
-# for i in range(len(y_train)):
-#     cnt=0
-#     for j in y_train[i]:
-#         if j!=0:
-#             cnt=cnt+1
-#     if(cnt==2):
-#         ind.append(i)
+# TODO: why would I want to delete them? I just added them for this reason? also don't understand the code
+#Deleting rows containing START and END tokens
+#For Training set
+ind=[]
+for i in range(len(y_train)):
+    cnt=0
+    for j in y_train[i]:
+        if j!=0:
+            cnt=cnt+1
+    if(cnt==2):
+        ind.append(i)
 
-# y_train=np.delete(y_train,ind, axis=0)
-# X_train=np.delete(X_train,ind, axis=0)
+y_train=np.delete(y_train,ind, axis=0)
+X_train=np.delete(X_train,ind, axis=0)
 
-# #For Validation set
-# ind=[]
-# for i in range(len(y_test)):
-#     cnt=0
-#     for j in y_test[i]:
-#         if j!=0:
-#             cnt=cnt+1
-#     if(cnt==2):
-#         ind.append(i)
+#For Validation set
+ind=[]
+for i in range(len(y_test)):
+    cnt=0
+    for j in y_test[i]:
+        if j!=0:
+            cnt=cnt+1
+    if(cnt==2):
+        ind.append(i)
 
-# y_test=np.delete(y_test,ind, axis=0)
-# X_test=np.delete(X_test,ind, axis=0)
+y_test=np.delete(y_test,ind, axis=0)
+X_val=np.delete(X_val,ind, axis=0)
 
 # #Model Building
 
