@@ -189,13 +189,16 @@ print(count/len(reviewsData['Cleaned_Summary']))
 max_text_len = 35
 max_summary_len = 8
 
-#Adding START and END tags to summary for better decoding
+# TODO: so what we calculate above are just the fractions of reviews/summaries that are <= than the "max length"
+# which is not really a max length but just "an idea"?
+
 cleaned_text =np.array(reviewsData['Cleaned_Text'])
 cleaned_summary=np.array(reviewsData['Cleaned_Summary'])
 
 short_text=[]
 short_summary=[]
 
+# only keep the articles and the summary when they are smaller than the max lengths
 for i in range(len(cleaned_text)):
     if(len(cleaned_summary[i].split())<=max_summary_len and len(cleaned_text[i].split())<=max_text_len):
         short_text.append(cleaned_text[i])
@@ -203,6 +206,7 @@ for i in range(len(cleaned_text)):
         
 df=pd.DataFrame({'text':short_text,'summary':short_summary})
 
+#Adding START and END tags/tokens to summary for better decoding
 df['summary'] = df['summary'].apply(lambda x : 'sostok '+ x + ' eostok')
 
 #Splitting the Dataset
@@ -240,6 +244,7 @@ print("Total Coverage of rare words:",(freq/tot_freq)*100)
 #Defining the Tokenizer with top most common words for reviews
 
 #Preparing a Tokenizer for reviews on training data
+# TODO: why is this not just cnt? tot_cnt-cnt doesn't give the words we defined as rare words?
 X_tokenizer = Tokenizer(num_words=tot_cnt-cnt)   #provides top most common words
 X_tokenizer.fit_on_texts(list(X_train))
 
@@ -301,8 +306,10 @@ y_voc  =   y_tokenizer.num_words +1
 y_voc
 
 #Checking the length of training data
+# TODO: what does this line do? those two statements should deliver the same results right?
 y_tokenizer.word_counts['sostok'],len(y_train)
 
+# TODO: why would I want to delete them? I just added them for this reason? also don't understand the code
 #Deleting rows containing START and END tokens
 #For Training set
 ind=[]
@@ -332,6 +339,7 @@ X_test=np.delete(X_test,ind, axis=0)
 
 #Model Building
 
+# TODO: skip attention for now
 #Adding Custom Attention layer 
 
 import tensorflow as tf
@@ -466,13 +474,16 @@ embedding_dim = 256
 # Encoder
 encoder_inputs = Input(shape=(max_text_len,))
 
+# TODO: understand how embedding works here
 #embedding layer
 enc_emb =  Embedding(X_voc, embedding_dim,trainable=True)(encoder_inputs)
 
+# TODO: understand how the LSTM class works
 #encoder lstm 1
 encoder_lstm1 = LSTM(latent_dim,return_sequences=True,return_state=True,dropout=0.4,recurrent_dropout=0.4)
 encoder_output1, state_h1, state_c1 = encoder_lstm1(enc_emb)
 
+# TODO: remove lstm2 and lstm3; we are not going to use several lstms in the encoder
 #encoder lstm 2
 encoder_lstm2 = LSTM(latent_dim,return_sequences=True,return_state=True,dropout=0.4,recurrent_dropout=0.4)
 encoder_output2, state_h2, state_c2 = encoder_lstm2(encoder_output1)
@@ -491,6 +502,7 @@ dec_emb = dec_emb_layer(decoder_inputs)
 decoder_lstm = LSTM(latent_dim, return_sequences=True, return_state=True,dropout=0.4,recurrent_dropout=0.2)
 decoder_outputs,decoder_fwd_state, decoder_back_state = decoder_lstm(dec_emb,initial_state=[state_h, state_c])
 
+# TODO: remove attension layer
 #Attention layer
 attn_layer = AttentionLayer(name='attention_layer')
 attn_out, attn_states = attn_layer([encoder_outputs, decoder_outputs])
@@ -498,6 +510,7 @@ attn_out, attn_states = attn_layer([encoder_outputs, decoder_outputs])
 #Concating Attention input and Decoder LSTM output
 decoder_concat_input = Concatenate(axis=-1, name='concat_layer')([decoder_outputs, attn_out])
 
+# TODO: find out what dense layer does; probably necessary (softmax over vocabulary)
 #Dense layer
 decoder_dense =  TimeDistributed(Dense(y_voc, activation='softmax'))
 decoder_outputs = decoder_dense(decoder_concat_input)
@@ -512,6 +525,7 @@ from tensorflow.keras.utils import plot_model
 
 plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
 
+# TODO: understand this
 #Adding Metrics
 model.compile(optimizer='rmsprop' , loss='sparse_categorical_crossentropy' , metrics=['accuracy'])
 
