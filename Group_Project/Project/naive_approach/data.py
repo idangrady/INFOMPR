@@ -30,15 +30,13 @@ def get_data(n, mode):
       'val': VALIDATION_PATH, 
       'test': TEST_PATH
     }
-    if mode not in path_mapping.keys():
+    if mode not in path_mapping:
       raise Exception(f"mode needs to be either \"train\", \"val\", or \"test\", not \"{mode}\"")
     path = path_mapping[mode]
     filelist = glob.glob(path) # get the list of datafiles
     assert filelist, ('Error: Empty filelist at') # check filelist isn't empty
     filelist = sorted(filelist)
     articles, abstracts = [], []
-    if (n != -1):
-      filelist = filelist[:n]
     for f in filelist:
       reader = open(f, 'rb')
       while True:
@@ -59,6 +57,8 @@ def get_data(n, mode):
             cleaned_abstract = clean_s_tags_from_abstract(abstract_text)
             articles.append(article_text)
             abstracts.append(cleaned_abstract)
+            if(len(articles) == n):
+              return articles, abstracts # in case n != -1, we return n articles and their corresponding abstracts
     return articles, abstracts
 
 def clean_s_tags_from_abstract(abstract):
