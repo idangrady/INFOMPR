@@ -74,8 +74,7 @@ def clean_s_tags_from_abstract(abstract):
       return " ".join([sentence.strip() for sentence in sentences])
 
 def show_first_n_news_items(n: int):
-    articles, abstracts = get_data()
+    articles, abstracts = get_data(n = n, mode = "train")
     for i in range(n):
         print(f"abstract {i}:\n{abstracts[i]}")
         print(f"article {i}:\n{articles[i]}")
-

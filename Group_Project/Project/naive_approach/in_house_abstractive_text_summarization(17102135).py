@@ -22,7 +22,9 @@ from tensorflow.keras.callbacks import EarlyStopping  #Allows training the model
 import warnings  #shows warning message that may arise 
 from data import get_data
 
-SIZE_OF_DATASET_IN_ARTICLES = 100
+SIZE_OF_DATASET_IN_ARTICLES = 3000
+MAX_ARTICLE_LEN = 400
+MAX_ABSTRACT_LEN = 50
 
 pd.set_option("display.max_colwidth", 200) #Setting the data sructure display length
 warnings.filterwarnings("ignore")
@@ -96,7 +98,7 @@ contraction_mapping = {"ain't": "is not", "aren't": "are not","can't": "cannot",
 import nltk
 from nltk.corpus import stopwords
 
-stop_words = set(stopwords.words('english')) 
+stop_words = set(stopwords.words('english'))
 def text_cleaner(text,num):
     newString = text.lower()  #converts all uppercase characters in the string into lowercase characters and returns it
     newString = BeautifulSoup(newString, "lxml").text #parses the string into an lxml.html 
@@ -106,9 +108,9 @@ def text_cleaner(text,num):
     newString = re.sub(r"'s\b","",newString)
     newString = re.sub("[^a-zA-Z]", " ", newString)
     if(num==0): 
-      tokens = [w for w in newString.split() if not w in stop_words]  #converting the strings into tokens
+      tokens = [w for w in newString.split() if not w in stop_words]  #converting the strings into tokens; removing stopwords
     else :
-      tokens = newString.split()
+      tokens = newString.split() # converting the strings into tokens, leaving the stopwords in
     long_words=[]
     for i in tokens:
         if len(i)>1:                  #removing short words
@@ -124,7 +126,7 @@ news_data['Article'][:10] #Looking at the 'Article' column of the dataset
 
 cleaned_article[:10] #Looking at the article after removing stop words, special characters , punctuations etc.
 
-#Summary Cleaning 
+#Abstract Cleaning 
 cleaned_abstract = []    #Using the text_cleaner function for cleaning summary too
 for t in news_data['Abstract']:
     cleaned_abstract.append(text_cleaner(t,1))
@@ -171,27 +173,20 @@ length_df = pd.DataFrame({'article':article_word_count, 'abstract':abstract_word
 length_df.hist(bins = 30)
 plt.show()
 
-max_article_len = 750
-max_abstract_len = 60
-
 #Function for gauging the actual article and abstract lengths
 count=0 
 for i in news_data['Cleaned_Article']:
-    if(len(i.split())<=max_article_len):
+    if(len(i.split())<=MAX_ARTICLE_LEN):
         count=count+1
-print(f"% of articles that are <= {max_article_len} tokens: {(count/len(news_data['Cleaned_Article'])) * 100}")
+print(f"% of articles that are <= {MAX_ARTICLE_LEN} tokens: {(count/len(news_data['Cleaned_Article'])) * 100}")
 
 #Function for getting the Maximum Abstract length
 count=0
 for i in news_data['Cleaned_Abstract']:
-    if(len(i.split())<=max_abstract_len):
+    if(len(i.split())<=MAX_ABSTRACT_LEN):
         count=count+1
-print(f"% of articles that are <= {max_abstract_len} tokens: {(count/len(news_data['Cleaned_Abstract'])) * 100}")
+print(f"% of articles that are <= {MAX_ABSTRACT_LEN} tokens: {(count/len(news_data['Cleaned_Abstract'])) * 100}")
 
-
-
-# TODO: so what we calculate above are just the fractions of reviews/summaries that are <= than the "max length"
-# which is not really a max length but just "an idea"?
 
 cleaned_article =np.array(news_data['Cleaned_Article'])
 cleaned_abstract=np.array(news_data['Cleaned_Abstract'])
@@ -201,7 +196,7 @@ short_abstract=[]
 
 # only keep the articles and the abstract when they are smaller than the max lengths
 for i in range(len(cleaned_article)):
-    if(len(cleaned_abstract[i].split())<=max_abstract_len and len(cleaned_article[i].split())<=max_article_len):
+    if(len(cleaned_abstract[i].split())<=MAX_ABSTRACT_LEN and len(cleaned_article[i].split())<=MAX_ARTICLE_LEN):
         short_article.append(cleaned_article[i])
         short_abstract.append(cleaned_abstract[i])
         
@@ -210,10 +205,10 @@ df=pd.DataFrame({'article':short_article,'abstract':short_abstract})
 #Adding START and END tags/tokens to abstract for better decoding
 df['abstract'] = df['abstract'].apply(lambda x : 'sostok '+ x + ' eostok')
 
-#Splitting the Dataset twice to get 80% training data, 15% of validation data and 5% of test data
+#Splitting the Dataset twice to get 80% training data, 10% of validation data and 10% of test data
 from sklearn.model_selection import train_test_split
 X_train,X_val,y_train,y_val=train_test_split(np.array(df['article']),np.array(df['abstract']),test_size=0.2,random_state=0,shuffle=True)
-X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size = 0.25, random_state = 0, shuffle = True)
+X_val, X_test, y_val, y_test = train_test_split(X_val, y_val, test_size = 0.5, random_state = 0, shuffle = True)
 
 #Preparing Tokenizer
 
@@ -244,10 +239,10 @@ print("% of rare words in vocabulary:",(cnt/tot_cnt)*100)
 print("Total Coverage of rare words:",(freq/tot_freq)*100)
 
 #Defining the Tokenizer with top most common words for articles
+# TODO: include not only training data but also val and test into the vocabulary
 
 #Preparing a Tokenizer for articles on training data
-# TODO: why is this not just cnt? tot_cnt-cnt doesn't give the words we defined as rare words?
-X_tokenizer = Tokenizer(num_words=tot_cnt-cnt)   #provides top most common words
+X_tokenizer = Tokenizer(num_words=tot_cnt - cnt)   #provides top most common words
 X_tokenizer.fit_on_texts(list(X_train))
 
 #Converting text sequences into integer sequences; note that we use the vocabulary that was generated on the
@@ -257,9 +252,9 @@ X_val_seq   =   X_tokenizer.texts_to_sequences(X_val)
 X_test_seq = X_tokenizer.texts_to_sequences(X_train)
 
 #Padding zero upto maximum length; we want one length so we can make the encoder max_article_len
-X_train    =   pad_sequences(X_train_seq,  maxlen = max_article_len, padding = 'post')
-X_val   =   pad_sequences(X_val_seq, maxlen = max_article_len, padding = 'post')
-X_test = pad_sequences(X_val_seq, maxlen = max_article_len, padding = 'post')
+X_train    =   pad_sequences(X_train_seq,  maxlen = MAX_ARTICLE_LEN, padding = 'post')
+X_val   =   pad_sequences(X_val_seq, maxlen = MAX_ARTICLE_LEN, padding = 'post')
+X_test = pad_sequences(X_test_seq, maxlen = MAX_ARTICLE_LEN, padding = 'post')
 
 
 #Size of vocabulary (+1 for padding token)
@@ -273,7 +268,7 @@ y_tokenizer.fit_on_texts(list(y_train))
 
 #Rarewords and their coverage in summary
 
-thresh = 6  ##If a word whose count is less than threshold i.e 6, then it's considered as rare word 
+thresh = 4  ##If a word whose count is less than threshold i.e 6, then it's considered as rare word 
 
 cnt = 0
 tot_cnt = 0
@@ -293,7 +288,9 @@ print("Total Coverage of rare words:",(freq/tot_freq)*100)
 #Defining Tokenizer with the most common words in abstract
 
 #Preparing a tokenizer for abstracts on training data
-y_tokenizer = Tokenizer(num_words=tot_cnt-cnt)  #provides top most common words
+# TODO: be aware that this exludes for example names of people that appear in just one article < thresh times!
+y_tokenizer = Tokenizer(num_words=tot_cnt - cnt)  #provides top most common words
+# TODO: if we do it that way, we will also have sos as a token? why would we want this in our vocabulary
 y_tokenizer.fit_on_texts(list(y_train))
 
 #Converting text sequences into integer sequences
@@ -302,9 +299,9 @@ y_val_seq   =   y_tokenizer.texts_to_sequences(y_val)
 y_test_seq   =   y_tokenizer.texts_to_sequences(y_test) 
 
 #Padding zero upto maximum length
-y_train    =   pad_sequences(y_train_seq, maxlen=max_abstract_len, padding='post')
-y_val   =   pad_sequences(y_val_seq, maxlen=max_abstract_len, padding='post')
-y_test = pad_sequences(y_test_seq, maxlen=max_abstract_len, padding='post')
+y_train    =   pad_sequences(y_train_seq, maxlen=MAX_ABSTRACT_LEN, padding='post')
+y_val   =   pad_sequences(y_val_seq, maxlen=MAX_ABSTRACT_LEN, padding='post')
+y_test = pad_sequences(y_test_seq, maxlen=MAX_ABSTRACT_LEN, padding='post')
 
 
 #size of vocabulary based on the vocabulary of the abstracts of the training set
@@ -341,6 +338,8 @@ for i in range(len(y_val)):
 
 y_val=np.delete(y_val,ind, axis=0)
 X_val=np.delete(X_val,ind, axis=0)
+
+# TODO: maybe do this for test as well or remove this part, seems unnecessary
 
 #Model Building
 
@@ -477,29 +476,29 @@ latent_dim = 256
 embedding_dim = 256
 
 # Encoder
-encoder_inputs = Input(shape=(max_article_len,))
+encoder_inputs = Input(shape=(MAX_ARTICLE_LEN,))
 
-# TODO: understand how embedding works here
+# TODO: understand how embedding works here; is this our own trained embedding? maybe we should just use word2vec
 #embedding layer
-enc_emb =  Embedding(X_voc, embedding_dim,trainable=True)(encoder_inputs)
+enc_emb =  Embedding(X_voc, embedding_dim,trainable=True, mask_zero = True)(encoder_inputs)
 
-# TODO: understand how the LSTM class works
-#encoder lstm 1
+#encoder lstm
 # TODO: why are we not using an activation function? default is none, only for recurrent activation the default is sigmoid
 # TODO: why do we need the encoder_outputs? only for attention probably
 encoder_lstm = LSTM(latent_dim,return_sequences=True,return_state=True,dropout=0.4,recurrent_dropout=0.4)
 encoder_outputs, state_h, state_c = encoder_lstm(enc_emb)
 
 #Setting up the Decoder using 'encoder_states' as initial state
-# TODO: figure out why the shape is None? isn't it max_abstract_length?
+# TODO: figure out why the shape is None? because we also use it later for our decoding when we only give one
 decoder_inputs = Input(shape=(None,))
 
 #Embedding layer
-dec_emb_layer = Embedding(y_voc, embedding_dim,trainable=True)
+dec_emb_layer = Embedding(y_voc, embedding_dim,trainable=True, mask_zero = True)
 dec_emb = dec_emb_layer(decoder_inputs)
 
 decoder_lstm = LSTM(latent_dim, return_sequences=True, return_state=True,dropout=0.4,recurrent_dropout=0.2)
 # TODO: is the LSTM bidirectional? why do we even need those two states?
+# TODO: why do the graphs say (None, 256) where 256 is the latent_dim (the length of the state vectors); shouldn't it be clear that it is (1, 256)?
 decoder_outputs ,decoder_fwd_state, decoder_back_state = decoder_lstm(dec_emb,initial_state=[state_h, state_c])
 
 # #Attention layer; removed for now
@@ -522,7 +521,7 @@ model.summary()
 #Visualize the Model
 from tensorflow.keras.utils import plot_model
 
-plot_model(model, to_file='model_plot.png', show_shapes=True, show_layer_names=True)
+plot_model(model, to_file='training_model_plot.png', show_shapes=True, show_layer_names=True)
 
 # TODO: understand this
 #Adding Metrics
@@ -535,9 +534,11 @@ es = EarlyStopping(monitor='val_loss', mode='min', verbose=1)
 # Commented out IPython magic to ensure Python compatibility.
 #Training the Model
 # %tensorflow_version 1.x
-# TODO: why do we reshape y_train with third dimension = 1? doesn't that take out the embeddings? indexing is clear, removing the eos token for the decoder inputs
-# and removing the sos token for the decoder outputs
-history = model.fit(x = [X_train,y_train[:,:-1]], y = y_train.reshape(y_train.shape[0],y_train.shape[1], 1)[:,1:] ,epochs=20,callbacks=[es],batch_size = int(SIZE_OF_DATASET_IN_ARTICLES * 0.1), validation_data=([X_val,y_val[:,:-1]], y_val.reshape(y_val.shape[0],y_val.shape[1], 1)[:,1:]))
+# indexing is clear, removing the eos token for the decoder inputs and removing the sos token for the decoder outputs
+# TODO: think about how exactly this is working with calculating the loss etc., maybe that's the problem
+# TODO: why is y 3-dimensional
+# TODO: fit only on one example and check if model actually works
+history = model.fit(x = [X_train,y_train[:,:-1]], y = y_train.reshape(y_train.shape[0],y_train.shape[1], 1)[:,1:] ,epochs=20,callbacks=[es],batch_size = int(y_train.shape[0] * 0.1), validation_data=([X_val,y_val[:,:-1]], y_val.reshape(y_val.shape[0],y_val.shape[1], 1)[:,1:]))
 
 #Visualizing Accuracy 
 from matplotlib import pyplot
@@ -552,108 +553,121 @@ pyplot.plot(history.history['val_loss'], label='val')
 pyplot.legend() 
 pyplot.show()
 
-# #Building Dictionary for Source Vocabulary
-# # TODO: what is happening here? we are just saving the vocabularies of the tokenizers (index -> word or word -> index maps)
-# target_index_word=y_tokenizer.index_word 
-# source_index_word=X_tokenizer.index_word 
-# target_word_index=y_tokenizer.word_index
 
-# # TODO: why do we build another model??? why not just use model.predict on our model?
-# #Inference/Validation Phase
-# #Encoding the input sequence to get the feature vector
-# encoder_model = Model(inputs=encoder_inputs,outputs=[encoder_outputs, state_h, state_c])
+#Building Dictionary for Source Vocabulary
+# TODO: what is happening here? we are just saving the vocabularies of the tokenizers (index -> word or word -> index maps)
+target_index_word=y_tokenizer.index_word 
+source_index_word=X_tokenizer.index_word 
+target_word_index=y_tokenizer.word_index
 
-# #Decoder setup
-# #These tensors will hold the states of the previous time step
-# decoder_state_input_h = Input(shape=(latent_dim,))
-# decoder_state_input_c = Input(shape=(latent_dim,))
-# # TODO: remove this, probably only used for attention
+#Testing phase
+#Encoding the input sequence to get the feature vector
+# TODO: is this what links this model to the trained model? that we use the same encoder_inputs Input object?
+encoder_model = Model(inputs=encoder_inputs,outputs=[encoder_outputs, state_h, state_c])
+
+#Decoder setup
+#These tensors will hold the states of the previous time step
+decoder_state_input_h = Input(shape=(latent_dim,))
+decoder_state_input_c = Input(shape=(latent_dim,))
+# TODO: remove this, probably only used for attention
 # decoder_hidden_state_input = Input(shape=(max_text_len,latent_dim))
 
-# #Getting the embeddings of the decoder sequence
-# dec_emb2= dec_emb_layer(decoder_inputs) 
+#Getting the embeddings of the decoder sequence
+dec_emb2= dec_emb_layer(decoder_inputs) 
 
-# #Setting the initial states to the states from the previous time step for better prediction
-# decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=[decoder_state_input_h, decoder_state_input_c])
+#Setting the initial states to the states from the previous time step for better prediction
+decoder_outputs2, state_h2, state_c2 = decoder_lstm(dec_emb2, initial_state=[decoder_state_input_h, decoder_state_input_c])
 
+# TODO: remove this
 # #Attention inference
 # attn_out_inf, attn_states_inf = attn_layer([decoder_hidden_state_input, decoder_outputs2])
 # decoder_inf_concat = Concatenate(axis=-1, name='concat')([decoder_outputs2, attn_out_inf])
 
-# #Adding Dense softmax layer to generate proability distribution over the target vocabulary
-# decoder_outputs2 = decoder_dense(decoder_inf_concat) 
+#Adding Dense softmax layer to generate proability distribution over the target vocabulary
+decoder_outputs2 = decoder_dense(decoder_outputs2) 
 
-# #Final Decoder model
-# decoder_model = Model(
-#     [decoder_inputs] + [decoder_hidden_state_input,decoder_state_input_h, decoder_state_input_c],
-#     [decoder_outputs2] + [state_h2, state_c2])
+#Final Decoder model
+# TODO: how is this all linked to what we trained before? where does the parameter sharing happen?
+# TODO: why are we appending the lists instead of just writing it in one list
+decoder_model = Model(
+    [decoder_inputs] + [decoder_state_input_h, decoder_state_input_c],
+    [decoder_outputs2] + [state_h2, state_c2])
 
-# #Function defining the implementation of inference process
-# def decode_sequence(input_seq):
-#     #Encoding the input as state vectors
-#     e_out, e_h, e_c = encoder_model.predict(input_seq)
+#Function defining the implementation of inference process
+def decode_sequence(input_seq):
+    #Encoding the input as state vectors
+    # TODO: plotting to see if this is actually the trained encoder and it is, but why?
+    plot_model(encoder_model, to_file='encoder_model_plot.png', show_shapes=True, show_layer_names=True)
+    e_out, e_h, e_c = encoder_model.predict(input_seq)
     
-#     #Generating empty target sequence of length 1
-#     target_seq = np.zeros((1,1))
+    #Generating empty target sequence of length 1
+    target_seq = np.zeros((1,1))
     
-#     #Populating the first word of target sequence with the start word
-#     target_seq[0, 0] = target_word_index['sostok']
+    #Populating the first word of target sequence with the start word
+    target_seq[0, 0] = target_word_index['sostok']
 
-#     stop_condition = False
-#     decoded_sentence = ''
-#     while not stop_condition:
-      
-#         output_tokens, h, c = decoder_model.predict([target_seq] + [e_out, e_h, e_c])
-
-#         #Sampling a token
-#         sampled_token_index = np.argmax(output_tokens[0, -1, :])
-#         sampled_token = target_index_word[sampled_token_index]
+    stop_condition = False
+    decoded_sentence = ''
+    while not stop_condition:
         
-#         if(sampled_token!='eostok'):
-#             decoded_sentence += ' '+sampled_token
+        output_tokens, h, c = decoder_model.predict([target_seq] + [e_h, e_c])
 
-#         #Exit condition: either hit max length or find stop word
-#         if (sampled_token == 'eostok'  or len(decoded_sentence.split()) >= (max_summary_len-1)):
-#             stop_condition = True
+        #Sampling a token
+        # TODO: understand the indexing: why -1 instead of 0 as well? should the output tokens be of shape (1, 1, num_words)?
+        # TODO: I added the plus one because I think the neurons in the dense layer start at 0 but our dictionary starts at 1, despite a one-on-one mapping from
+        # dictionary index numbers to neurons if I understand correctly
+        sampled_token_index = np.argmax(output_tokens[0, -1, :]) + 1
+        sampled_token = target_index_word[sampled_token_index]
+        
+        if(sampled_token!='eostok'):
+            decoded_sentence += ' '+sampled_token
 
-#         #Updating the target sequence (of length 1)
-#         target_seq = np.zeros((1,1))
-#         target_seq[0, 0] = sampled_token_index
+        #Exit condition: either hit max length or find stop word
+        # TODO: it used to be >= (max_abstract_len - 1); why? doesn't make sense to me
+        if (sampled_token == 'eostok'  or len(decoded_sentence.split()) == MAX_ABSTRACT_LEN):
+            stop_condition = True
 
-#         #Updating internal states
-#         e_h, e_c = h, c
+        #Updating the target sequence (of length 1)
+        target_seq = np.zeros((1,1))
+        target_seq[0, 0] = sampled_token_index
 
-#     return decoded_sentence
+        #Updating internal states
+        e_h, e_c = h, c
 
-# #Functions to convert an integer sequence to a word sequence for summary as well as reviews 
-# def seq2summary(input_seq):
-#     newString=''
-#     for i in input_seq:
-#         if((i!=0 and i!=target_word_index['sostok']) and i!=target_word_index['eostok']):
-#             newString=newString+target_index_word[i]+' '
-#     return newString
+    return decoded_sentence
 
-# def seq2text(input_seq):
-#     newString=''
-#     for i in input_seq:
-#         if(i!=0):
-#             newString=newString+source_index_word[i]+' '
-#     return newString
+#Functions to convert an integer sequence to a word sequence for summary as well as reviews 
+def seq2summary(input_seq):
+    newString=''
+    for i in input_seq:
+        if((i!=0 and i!=target_word_index['sostok']) and i!=target_word_index['eostok']):
+            newString=newString+target_index_word[i]+' '
+    return newString
 
-# #Summaries generated by the model
+def seq2text(input_seq):
+    newString=''
+    for i in input_seq:
+        if(i!=0):
+            newString=newString+source_index_word[i]+' '
+    return newString
 
-# for i in range(0,20):
-#     print("Review:",seq2text(X_train[i]))
-#     print("Original summary:",seq2summary(y_train[i]))
-#     print("Predicted summary:",decode_sequence(X_train[i].reshape(1,max_text_len)))
-#     print("\n")
+#Summaries generated by the model
+
+# TODO: change this, will crash when there is less than 20
+for i in range(0,20):
+    print("Article:",seq2text(X_train[i]))
+    print("Original summary:",seq2summary(y_train[i]))
+    print("article to be decoded:")
+    print(X_train[i].reshape(1,MAX_ARTICLE_LEN))
+    print("Predicted summary:",decode_sequence(X_train[i].reshape(1,MAX_ARTICLE_LEN)))
+    print("\n")
 
 # #BLEU Score of Training set
 # #n-gram individual BLEU
 # from nltk.translate.bleu_score import sentence_bleu
 # for i in range(0,1000):
-#   reference = seq2summary(y_train[i])
-#   candidate = decode_sequence(X_train[i].reshape(1, max_text_len))
+#   reference = seq2summary(y_test[i])
+#   candidate = decode_sequence(X_test[i].reshape(1, max_text_len))
 
 # print('Individual 1-gram: %f' % sentence_bleu(reference, candidate, weights=(1, 0, 0, 0)))
 # print('Individual 2-gram: %f' % sentence_bleu(reference, candidate, weights=(0, 1, 0, 0)))
@@ -663,8 +677,8 @@ pyplot.show()
 # #4-gram cumulative BLEU
 # from nltk.translate.bleu_score import sentence_bleu
 # for i in range(0,1000):
-#   reference = seq2summary(y_train[i])
-#   candidate = decode_sequence(X_train[i].reshape(1, max_text_len))
+#   reference = seq2summary(y_test[i])
+#   candidate = decode_sequence(X_test[i].reshape(1, max_text_len))
 
 # score = sentence_bleu(reference, candidate, weights=(0.25, 0.25, 0.25, 0.25))
 # print(score)
@@ -672,8 +686,8 @@ pyplot.show()
 # #cumulative BLEU scores
 # from nltk.translate.bleu_score import sentence_bleu
 # for i in range(0,1000):
-#   reference = seq2summary(y_train[i])
-#   candidate = decode_sequence(X_train[i].reshape(1, max_text_len))
+#   reference = seq2summary(y_test[i])
+#   candidate = decode_sequence(X_test[i].reshape(1, max_text_len))
 
 # print('Cumulative 1-gram: %f' % sentence_bleu(reference, candidate, weights=(1, 0, 0, 0)))
 # print('Cumulative 2-gram: %f' % sentence_bleu(reference, candidate, weights=(0.5, 0.5, 0, 0)))
