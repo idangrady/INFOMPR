@@ -7,7 +7,7 @@ from tensorflow.core.example import example_pb2
 # <s> and </s> are used in the data files to segment the abstracts into sentences.
 SENTENCE_START = '<s>'
 SENTENCE_END = '</s>'
-BASE_PATH = "/Users/max/downloads/finished_files/chunked/"
+BASE_PATH = "./chunked/"
 TRAINING_PATH = BASE_PATH + "train_*"
 VALIDATION_PATH = BASE_PATH + "val_*"
 TEST_PATH = BASE_PATH + "test_*"

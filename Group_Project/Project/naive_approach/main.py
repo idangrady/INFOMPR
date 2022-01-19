@@ -22,6 +22,18 @@ from tensorflow.keras.callbacks import EarlyStopping  #Allows training the model
 import warnings  #shows warning message that may arise 
 from data import get_data
 
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def start():
+    print("started the programm")
+    return
+
+if __name__ == "__main__":
+    app.run(debug = True, host = "0.0.0.0", port = int(os.environ.get("PORT", 8080)))
+
 SIZE_OF_DATASET_IN_ARTICLES = 3000
 MAX_ARTICLE_LEN = 400
 MAX_ABSTRACT_LEN = 50
@@ -616,7 +628,7 @@ def decode_sequence(input_seq):
         # TODO: understand the indexing: why -1 instead of 0 as well? should the output tokens be of shape (1, 1, num_words)?
         # TODO: I added the plus one because I think the neurons in the dense layer start at 0 but our dictionary starts at 1, despite a one-on-one mapping from
         # dictionary index numbers to neurons if I understand correctly
-        sampled_token_index = np.argmax(output_tokens[0, -1, :]) + 1
+        sampled_token_index = np.argmax(output_tokens[0, -1, :])
         sampled_token = target_index_word[sampled_token_index]
         
         if(sampled_token!='eostok'):

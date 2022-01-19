@@ -1,0 +1,12 @@
+flask
+gunicorn
+tensorflow
+numpy
+glob
+struct
+csv
+pandas
+re
+bs4
+keras
+nltk
