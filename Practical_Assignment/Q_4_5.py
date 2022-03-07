@@ -102,41 +102,37 @@ df = pd.DataFrame(data = None, columns=("name" ,"accuracy_test", "accuracy train
 df_2 = pd.DataFrame(data = None, columns=("name" , "accuracy_test", "accuracy train", "precision", "recall" ,"F1 Score",))
 
 X_train,X_test,y_train,Y_test = train_test_split(pca_data_19, labels,shuffle= 40, train_size=0.2)
-idx = 0
-
 save = False
 predictions_list  = []
 
 print(Y_test.shape)
-for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier()]: #LogisticRegression(),
+for model in [ LogisticRegression(), LogisticRegressionCV(),SVC(),MLPClassifier()]:
     (name ,params) = model_get_best_grid_params(str(model))
     if name =='':
         model = LogisticRegression(solver = 'lbfgs')
     else: 
 
         grid_model =GridSearchCV(model, params, cv=5)
-        
+
     model.fit(X_train, y_train)
     predicted = model.predict(X_test)
-    
+
     predictions_list.append((name, predicted))
     confusion_matrix = metrics.confusion_matrix(predicted, Y_test)
     confusion_matrixes.append(((name, confusion_matrix)))
-    
-    
+
+
     training_score = model.score(X_train, y_train)
     expenend_ = np.expand_dims(predicted, axis = 0)
     test_score = model.score(X_test, Y_test)
-    
-    
+
+
     precision, recall, fscore, _ = precision_recall_fscore_support(predicted, Y_test, average = 'macro')
     result = [name,test_score, training_score,precision, recall, fscore]
-    
+
     df_2.loc[len(result)] = result
     df = pd.concat([df,df_2]).reset_index(drop = True)
-    
-    idx +=1
-    
+
 saved_p_val =True
 df_p = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
 df_2P = pd.DataFrame(columns=("Model_1", "Model_2", "Chai", "P_Value"))
@@ -147,11 +143,9 @@ for prediction_1 in predictions_list:
     model_1, prediction_1 = prediction_1
     for prediction_2 in predictions_list:
         model_2, prediction_2 = prediction_2
-        if (model_1 ==model_2):
-            pass
-        else:
+        if model_1 != model_2:
             output_matrix, chai= ncnemars_test(Y_test,prediction_1, prediction_2)
-            
+
             chi2, p = mcnemar(ary=output_matrix, corrected=True)
 
             print(f"{model_1} {model_2} Chai: {chi2}, P: {p}")
@@ -166,9 +160,9 @@ if saved_p_val:
     df_p.to_csv("Pvalus_models_")
     with open("P_value_matrixes",'w') as p_val_matrix:
         for (model_1, model_2, output_mat) in output_matrixes_p_val:
-            p_val_matrix.write(f"models: {str(model_1)} , {str(model_2)}" + '\n\n')
+            p_val_matrix.write(f'models: {model_1} , {model_2}' + '\n\n')
             p_val_matrix.write(str(output_mat))
-    
+
 
 if save: 
     df.to_csv("P_Values/Models.csv", index = False)
